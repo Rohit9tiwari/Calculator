@@ -1,0 +1,152 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Meta tags for character set and viewport settings -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Title of the HTML page -->
+    <title>Cartoonify Image</title>
+    <style>
+        .loading-spinner {
+            display: none;
+        }
+         body {
+            background-image: url('/static/OIP (1).jpg'); /* Replace 'background.jpg' with your image file */
+            /*background-size: cover;
+            background-position: center;
+            font-family: Arial, sans-serif; /* You can change the font family if needed */
+           /* color: #0d0124; /* Set text color to white for better visibility on the background */
+        }
+        h1, h2, p,div {
+            text-align: center;
+            text-decoration-color: bisque;
+            color: bisque;
+        }
+        #imageshow{
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-evenly;
+            object-fit: cover;
+            width: auto; 
+          max-height:50%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header section -->
+    <h1>Cartoonify Image</h1>
+ <!-- Upload Image Section -->
+ <h2>Upload Image</h2>
+ <div>
+ <!-- Input for selecting an image file -->
+ <input type="file" id="uploadInput" accept=".png, .jpg, .jpeg, .gif">
+ <!-- Button to trigger the preview of the selected image -->
+ <button onclick="previewImage()">Preview</button>
+ <!-- Button to upload the selected image -->
+ <button onclick="uploadImage()">Upload</button>
+</div>
+
+ <!-- Container to display the selected image preview -->
+ <div id="imagePreviewContainer" style="display: none;">
+     <!-- Heading for the selected image preview -->
+     <h3>Selected Image Preview</h3>
+     <!-- Image element to display the preview -->
+     <img id="imagePreview" style="max-width: 500px;">
+ </div>
+    <!-- Image Gallery Section -->
+    <h2>Image Gallery</h2>
+    <div id="imageshow">
+        <!-- Loop through the list of images and display them with links to their select_image route -->
+        {% for image in images %}
+            <a href="{{ url_for('select_image', filename=image) }}">
+                <!-- Display each image with a maximum width and margin -->
+                <img src="{{ url_for('static', filename='uploads/' + image) }}" alt="{{ image }}" style="max-width: 300px; margin: 10px;">
+            </a>
+        {% endfor %}
+    </div>
+
+   
+
+    <!-- Display the selected image and its cartoonified version if available -->
+    {% if selected_image %}
+        <h2>Selected Image</h2>
+        <!-- Display the selected image with a maximum width -->
+        <img src="{{ url_for('static', filename='uploads/' + selected_image) }}" alt="{{ selected_image }}" style="max-width: 300px;">
+
+        <!-- Check if the cartoonified image is available -->
+        {% if cartoonified_image %}
+            <h2>Cartoonified Image</h2>
+            <!-- Display the cartoonified image with a maximum width -->
+            <img src="{{ url_for('static', filename='cartoon_images/' + cartoonified_image) }}" alt="Cartoonified Image" style="max-width: 650px;">
+        {% else %}
+            <!-- Display an error message if the cartoonified image is not found -->
+            <p style="color: red;">Cartoonified image not found.</p>
+        {% endif %}
+    {% endif %}
+
+    <!-- Display error messages if any -->
+    {% if error %}
+        <!-- Display an error message with a red color -->
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    <!-- JavaScript Section -->
+    <script>
+        // JavaScript function to preview the selected image
+        function previewImage() {
+            // Get the input element for file selection
+            var input = document.getElementById('uploadInput');
+            // Get the container for the image preview
+            var previewContainer = document.getElementById('imagePreviewContainer');
+            // Get the image element for preview
+            var previewImage = document.getElementById('imagePreview');
+
+            // Get the selected file
+            var file = input.files[0];
+
+            // Check if a file is selected
+            if (file) {
+                // Use FileReader to read and display the image preview
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    // Set the source of the preview image to the data URL
+                    previewImage.src = e.target.result;
+                    // Display the image preview container
+                    previewContainer.style.display = 'block';
+                };
+
+                // Read the selected file as a data URL
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // JavaScript function to upload the selected image
+        function uploadImage() {
+            // Get the input element for file selection
+            var input = document.getElementById('uploadInput');
+            // Get the selected file
+            var file = input.files[0];
+
+            // Check if a file is selected
+            if (file) {
+                // Create FormData object and append the selected file
+                var formData = new FormData();
+                formData.append('file', file);
+
+                // Use fetch to send a POST request to the server
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                // Parse the JSON response and redirect to the specified URL
+                .then(response => response.json())
+                .then(data => {
+                    window.location.href = data.redirect_url;
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }
+    </script>
+</body>
+</html>
